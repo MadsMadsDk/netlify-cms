@@ -4,8 +4,8 @@ import { connect } from 'react-redux';
 import { selectSearchedEntries } from '../reducers';
 import { searchEntries } from '../actions/entries';
 import { Loader } from '../components/UI';
-import EntryListing from '../components/EntryListing';
-import styles from './CollectionPage.css';
+import EntryListing from '../components/EntryListing/EntryListing';
+import styles from './breakpoints.css';
 
 class SearchPage extends React.Component {
 
@@ -39,7 +39,7 @@ class SearchPage extends React.Component {
         <Loader active>{['Loading Entries', 'Caching Entries', 'This might take several minutes']}</Loader>
         :
           <EntryListing collections={collections} entries={entries} page={page} onPaginate={this.handleLoadMore}>
-          Results for “         {searchTerm}”
+          Results for “                             {searchTerm}”
           </EntryListing>
       }
     </div>);

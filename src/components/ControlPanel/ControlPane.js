@@ -3,13 +3,18 @@ import ImmutablePropTypes from 'react-immutable-proptypes';
 import { resolveWidget } from '../Widgets';
 import styles from './ControlPane.css';
 
+function isHidden(field) {
+  return field.get('widget') === 'hidden';
+}
+
 export default class ControlPane extends Component {
 
   controlFor(field) {
-    const { entry, fields, getMedia, onChange, onAddMedia, onRemoveMedia } = this.props;
+    const { entry, getMedia, onChange, onAddMedia, onRemoveMedia } = this.props;
     const widget = resolveWidget(field.get('widget'));
     const fieldName = field.get('name');
-    const value = entry.getIn(['data', fieldName]);
+    const fieldDefaultValue = field.get('default');
+    const value = entry.getIn(['data', fieldName], fieldDefaultValue);
     if (entry.size === 0 || entry.get('partial') === true) return null;
     return (
       <div className={styles.control}>
@@ -37,14 +42,12 @@ export default class ControlPane extends Component {
     return (
       <div>
         {
-          fields.map(field =>
-            <div
-              key={field.get('name')}
-              className={styles.widget}
-            >
-              {this.controlFor(field)}
-            </div>
-          )
+          fields.map((field) => {
+            if (isHidden(field)) {
+              return null;
+            }
+            return <div key={field.get('name')} className={styles.widget}>{this.controlFor(field)}</div>;
+          })
         }
       </div>
     );

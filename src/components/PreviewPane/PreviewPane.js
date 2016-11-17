@@ -3,20 +3,19 @@ import ReactDOM from 'react-dom';
 import ImmutablePropTypes from 'react-immutable-proptypes';
 import { ScrollSyncPane } from '../ScrollSync';
 import registry from '../../lib/registry';
-import Collection from '../../valueObjects/Collection';
 import { resolveWidget } from '../Widgets';
+import { selectTemplateName } from '../../reducers/collections';
 import Preview from './Preview';
 import styles from './PreviewPane.css';
 
 export default class PreviewPane extends React.Component {
-
   componentDidUpdate() {
     this.renderPreview();
   }
 
   widgetFor = (name) => {
     const { fields, entry, getMedia } = this.props;
-    const field = fields.find(field => field.get('name') === name);
+    const field = fields.find(f => f.get('name') === name);
     const widget = resolveWidget(field.get('widget'));
     return React.createElement(widget.preview, {
       key: field.get('name'),
@@ -25,23 +24,6 @@ export default class PreviewPane extends React.Component {
       getMedia,
     });
   };
-
-  renderPreview() {
-    const { entry, collection } = this.props;
-    const collectionModel = new Collection(collection);
-    const component = registry.getPreviewTemplate(collectionModel.templateName(entry.get('slug'))) || Preview;
-    const previewProps = {
-      ...this.props,
-      widgetFor: this.widgetFor,
-    };
-    // We need to use this API in order to pass context to the iframe
-    ReactDOM.unstable_renderSubtreeIntoContainer(
-      this,
-      <ScrollSyncPane attachTo={this.iframeBody}>
-        {React.createElement(component, previewProps)}
-      </ScrollSyncPane>
-      , this.previewEl);
-  }
 
   handleIframeRef = (ref) => {
     if (ref) {
@@ -58,6 +40,23 @@ export default class PreviewPane extends React.Component {
     }
   };
 
+  renderPreview() {
+    const { entry, collection } = this.props;
+    const component = registry.getPreviewTemplate(selectTemplateName(collection, entry.get('slug'))) || Preview;
+
+    const previewProps = {
+      ...this.props,
+      widgetFor: this.widgetFor,
+    };
+    // We need to use this API in order to pass context to the iframe
+    ReactDOM.unstable_renderSubtreeIntoContainer(
+      this,
+      <ScrollSyncPane attachTo={this.iframeBody}>
+        {React.createElement(component, previewProps)}
+      </ScrollSyncPane>
+      , this.previewEl);
+  }
+
   render() {
     const { collection } = this.props;
     if (!collection) {
@@ -73,7 +72,4 @@ PreviewPane.propTypes = {
   fields: ImmutablePropTypes.list.isRequired,
   entry: ImmutablePropTypes.map.isRequired,
   getMedia: PropTypes.func.isRequired,
-  scrollTop: PropTypes.number,
-  scrollHeight: PropTypes.number,
-  offsetHeight: PropTypes.number,
 };

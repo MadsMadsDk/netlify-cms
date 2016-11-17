@@ -1,12 +1,12 @@
 {
   "name": "netlify-cms",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Netlify CMS lets content editors work on structured content stored in git",
-  "main": "dist/cms.js",
+  "main": "index.js",
   "scripts": {
     "start": "webpack-dev-server --config webpack.dev.js",
-    "test": "NODE_ENV=test mocha --recursive --compilers js:babel-register --require ./test/setup.js",
-    "test:watch": "npm test -- --watch",
+    "test": "jest",
+    "test:watch": "jest --watch",
     "build": "NODE_ENV=production webpack --config webpack.prod.js",
     "prepublish": "npm run build",
     "storybook": "start-storybook -p 9001",
@@ -32,18 +32,23 @@
       "git add"
     ]
   },
-  "files": ["dist/", "README.md"],
+  "files": [
+    "dist/",
+    "README.md"
+  ],
   "pre-commit": "lint:staged",
   "jest": {
     "moduleNameMapper": {
       "^.+\\.(png|eot|woff|woff2|ttf|svg|gif)$": "<rootDir>/__mocks__/fileLoaderMock.js",
-      "^.+\\.scss$": "<rootDir>/__mocks__/styleLoaderMock.js",
-      "^.+\\.css$": "identity-obj-proxy"
+      "^.+\\.s?css$": "<rootDir>/__mocks__/styleLoaderMock.js"
     }
   },
   "keywords": [
     "netlify",
-    "cms"
+    "cms",
+    "content editing",
+    "static site generators",
+    "jamstack"
   ],
   "author": "Netlify",
   "license": "MIT",
@@ -60,7 +65,6 @@
     "enzyme": "^2.4.1",
     "eslint": "^3.7.1",
     "eslint-config-netlify": "github:netlify/eslint-config-netlify",
-    "expect": "^1.20.2",
     "exports-loader": "^0.6.3",
     "extract-text-webpack-plugin": "^1.0.1",
     "file-loader": "^0.8.5",
@@ -97,6 +101,7 @@
     "fuzzy": "^0.1.1",
     "immutability-helper": "^2.0.0",
     "immutable": "^3.7.6",
+    "jest": "^17.0.0",
     "js-base64": "^2.1.9",
     "js-yaml": "^3.5.3",
     "json-loader": "^0.5.4",
@@ -108,18 +113,31 @@
     "normalize.css": "^4.2.0",
     "pluralize": "^3.0.0",
     "prismjs": "^1.5.1",
+    "prosemirror-commands": "^0.12.0",
+    "prosemirror-history": "^0.12.0",
+    "prosemirror-inputrules": "^0.12.0",
+    "prosemirror-keymap": "^0.12.0",
+    "prosemirror-markdown": "^0.12.0",
+    "prosemirror-model": "^0.12.0",
+    "prosemirror-schema-basic": "^0.12.0",
+    "prosemirror-schema-list": "^0.12.0",
+    "prosemirror-schema-table": "^0.12.0",
+    "prosemirror-state": "^0.12.0",
+    "prosemirror-transform": "^0.12.1",
+    "prosemirror-view": "^0.12.0",
     "react": "^15.1.0",
     "react-addons-css-transition-group": "^15.3.1",
     "react-datetime": "^2.6.0",
     "react-dom": "^15.1.0",
     "react-hot-loader": "^3.0.0-beta.2",
-    "react-immutable-proptypes": "^1.6.0",
+    "react-immutable-proptypes": "^2.1.0",
     "react-lazy-load": "^3.0.3",
     "react-portal": "^2.2.1",
     "react-pure-render": "^1.0.2",
     "react-redux": "^4.4.0",
     "react-router": "^2.5.1",
     "react-router-redux": "^4.0.5",
+    "react-sidebar": "^2.2.1",
     "react-simple-dnd": "^0.1.2",
     "react-sortable": "^1.2.0",
     "react-toolbox": "^1.2.1",

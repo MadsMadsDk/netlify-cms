@@ -5,7 +5,7 @@ import { Link } from 'react-router';
 import moment from 'moment';
 import { Card, CardTitle, CardText, CardActions } from 'react-toolbox/lib/card';
 import Button from 'react-toolbox/lib/button';
-import { status, statusDescriptions } from '../constants/publishModes';
+import { status, statusDescriptions } from '../../constants/publishModes';
 import styles from './UnpublishedListing.css';
 
 class UnpublishedListing extends React.Component {
@@ -108,7 +108,7 @@ class UnpublishedListing extends React.Component {
     const columns = this.renderColumns(this.props.entries);
     return (
       <div className={styles.clear}>
-        <h1>Editorial Workflow</h1>
+        <h5>Editorial Workflow</h5>
         <div className={styles.container}>
           {columns}
         </div>

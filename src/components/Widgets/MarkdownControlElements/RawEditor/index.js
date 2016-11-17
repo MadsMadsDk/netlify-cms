@@ -1,13 +1,12 @@
 import React, { PropTypes } from 'react';
-import { fromJS } from 'immutable';
 import MarkupIt from 'markup-it';
 import markdownSyntax from 'markup-it/syntaxes/markdown';
 import htmlSyntax from 'markup-it/syntaxes/html';
 import CaretPosition from 'textarea-caret-position';
 import registry from '../../../../lib/registry';
 import MediaProxy from '../../../../valueObjects/MediaProxy';
-import Toolbar from './Toolbar';
-import BlockMenu from './BlockMenu';
+import Toolbar from '../Toolbar';
+import BlockMenu from '../BlockMenu';
 import styles from './index.css';
 
 const HAS_LINE_BREAK = /\n/m;
@@ -65,36 +64,11 @@ function getCleanPaste(e) {
   });
 }
 
-const buildtInPlugins = [{
-  label: 'Image',
-  id: 'image',
-  fromBlock: match => match && {
-    image: match[2],
-    alt: match[1],
-  },
-  toBlock: data => `![${ data.alt }](${ data.image })`,
-  toPreview: (data) => {
-    return <img src={data.image} alt={data.alt} />;
-  },
-  pattern: /^!\[([^\]]+)\]\(([^\)]+)\)$/,
-  fields: [{
-    label: 'Image',
-    name: 'image',
-    widget: 'image',
-  }, {
-    label: 'Alt Text',
-    name: 'alt',
-  }],
-}];
-buildtInPlugins.forEach(plugin => registry.registerEditorComponent(plugin));
-
 export default class RawEditor extends React.Component {
   constructor(props) {
     super(props);
     const plugins = registry.getEditorComponents();
-    this.state = {
-      plugins,
-    };
+    this.state = { plugins };
     this.shortcuts = {
       meta: {
         b: this.handleBold,
@@ -238,8 +212,8 @@ export default class RawEditor extends React.Component {
     const selection = this.getSelection();
     if (selection.start !== selection.end && !HAS_LINE_BREAK.test(selection.selected)) {
       try {
-        const position = this.caretPosition.get(selection.start, selection.end);
-        this.setState({ showToolbar: true, showBlockMenu: false, selectionPosition: position });
+        const selectionPosition = this.caretPosition.get(selection.start, selection.end);
+        this.setState({ showToolbar: true, showBlockMenu: false, selectionPosition });
       } catch (e) {
         this.setState({ showToolbar: false, showBlockMenu: false });
       }
@@ -270,8 +244,9 @@ export default class RawEditor extends React.Component {
     this.updateHeight();
   };
 
-  handleBlock = (chars) => {
-    this.replaceSelection(chars);
+  handleBlock = (plugin, data) => {
+    const toBlock = plugin.get('toBlock');
+    this.replaceSelection(toBlock.call(toBlock, data.toJS()));
     this.setState({ showBlockMenu: false });
   };
 
@@ -315,6 +290,10 @@ export default class RawEditor extends React.Component {
     });
   };
 
+  handleToggle = () => {
+    this.props.onMode('visual');
+  };
+
   render() {
     const { onAddMedia, onRemoveMedia, getMedia } = this.props;
     const { showToolbar, showBlockMenu, plugins, selectionPosition } = this.state;
@@ -327,6 +306,7 @@ export default class RawEditor extends React.Component {
         onBold={this.handleBold}
         onItalic={this.handleItalic}
         onLink={this.handleLink}
+        onToggleMode={this.handleToggle}
       />
       <BlockMenu
         isOpen={showBlockMenu}
@@ -353,5 +333,6 @@ RawEditor.propTypes = {
   onRemoveMedia: PropTypes.func.isRequired,
   getMedia: PropTypes.func.isRequired,
   onChange: PropTypes.func.isRequired,
+  onMode: PropTypes.func.isRequired,
   value: PropTypes.node,
 };

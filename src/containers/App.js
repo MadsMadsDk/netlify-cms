@@ -2,13 +2,15 @@ import React, { PropTypes } from 'react';
 import ImmutablePropTypes from 'react-immutable-proptypes';
 import pluralize from 'pluralize';
 import { connect } from 'react-redux';
-import { Layout, Panel, NavDrawer } from 'react-toolbox/lib/layout';
+import { Layout, Panel } from 'react-toolbox/lib/layout';
 import { Navigation } from 'react-toolbox/lib/navigation';
 import { Link } from 'react-toolbox/lib/link';
 import { Notifs } from 'redux-notifications';
 import TopBarProgress from 'react-topbar-progress-indicator';
+import Sidebar from './Sidebar';
 import { loadConfig } from '../actions/config';
-import { loginUser } from '../actions/auth';
+import { loginUser, logoutUser } from '../actions/auth';
+import { toggleSidebar } from '../actions/globalUI';
 import { currentBackend } from '../backends/backend';
 import {
   SHOW_COLLECTION,
@@ -40,7 +42,9 @@ class App extends React.Component {
     config: ImmutablePropTypes.map,
     collections: ImmutablePropTypes.orderedMap,
     createNewEntryInCollection: PropTypes.func.isRequired,
+    logoutUser: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
+    toggleSidebar: PropTypes.func.isRequired,
     navigateToCollection: PropTypes.func.isRequired,
     user: ImmutablePropTypes.map,
     runCommand: PropTypes.func.isRequired,
@@ -57,10 +61,6 @@ class App extends React.Component {
       </div>
     </div>);
   }
-
-  state = {
-    navDrawerIsVisible: true,
-  };
 
   componentDidMount() {
     this.props.dispatch(loadConfig());
@@ -122,22 +122,17 @@ class App extends React.Component {
     return { commands, defaultCommands };
   }
 
-  toggleNavDrawer = () => {
-    this.setState({
-      navDrawerIsVisible: !this.state.navDrawerIsVisible,
-    });
-  };
-
   render() {
-    const { navDrawerIsVisible } = this.state;
     const {
       user,
       config,
       children,
       collections,
+      toggleSidebar,
       runCommand,
       navigateToCollection,
       createNewEntryInCollection,
+      logoutUser,
       isFetching,
     } = this.props;
 
@@ -158,65 +153,65 @@ class App extends React.Component {
     }
 
     const { commands, defaultCommands } = this.generateFindBarCommands();
+    const sidebarContent = (
+      <nav className={styles.nav}>
+        <h1 className={styles.heading}>Collections</h1>
+        <Navigation type="vertical">
+          {
+            collections.valueSeq().map(collection =>
+              <Link
+                key={collection.get('name')}
+                onClick={navigateToCollection.bind(this, collection.get('name'))} // eslint-disable-line
+              >
+                {collection.get('label')}
+              </Link>
+            )
+          }
+        </Navigation>
+      </nav>
+    );
 
     return (
-      <Layout theme={styles}>
-        <Notifs
-          className={styles.notifsContainer}
-          CustomComponent={Toast}
-        />
-        <NavDrawer
-          active={navDrawerIsVisible}
-          scrollY
-          permanentAt={navDrawerIsVisible ? 'lg' : null}
-          onOverlayClick={this.toggleNavDrawer} // eslint-disable-line
-          theme={styles}
-        >
-          <nav className={styles.nav}>
-            <h1 className={styles.heading}>Collections</h1>
-            <Navigation type="vertical">
-              {
-                collections.valueSeq().map(collection =>
-                  <Link
-                    key={collection.get('name')}
-                    onClick={navigateToCollection.bind(this, collection.get('name'))} // eslint-disable-line
-                  >
-                    {collection.get('label')}
-                  </Link>
-                )
-              }
-            </Navigation>
-          </nav>
-        </NavDrawer>
-        <AppHeader
-          collections={collections}
-          commands={commands}
-          defaultCommands={defaultCommands}
-          runCommand={runCommand}
-          onCreateEntryClick={createNewEntryInCollection}
-          toggleNavDrawer={this.toggleNavDrawer}
-        />
-        <Panel scrollY>
-          { isFetching && <TopBarProgress /> }
-          <div className={styles.main}>
-            {children}
-          </div>
-        </Panel>
-      </Layout>
+      <Sidebar content={sidebarContent}>
+        <Layout theme={styles}>
+          <Notifs
+            className={styles.notifsContainer}
+            CustomComponent={Toast}
+          />
+          <AppHeader
+            user={user}
+            collections={collections}
+            commands={commands}
+            defaultCommands={defaultCommands}
+            runCommand={runCommand}
+            onCreateEntryClick={createNewEntryInCollection}
+            onLogoutClick={logoutUser}
+            toggleDrawer={toggleSidebar}
+          />
+          <Panel scrollY>
+            { isFetching && <TopBarProgress /> }
+            <div className={styles.main}>
+              {children}
+            </div>
+          </Panel>
+
+        </Layout>
+      </Sidebar>
     );
   }
 }
 
 function mapStateToProps(state) {
-  const { auth, config, collections, global } = state;
+  const { auth, config, collections, globalUI } = state;
   const user = auth && auth.get('user');
-  const { isFetching } = global;
+  const isFetching = globalUI.get('isFetching');
   return { auth, config, collections, user, isFetching };
 }
 
 function mapDispatchToProps(dispatch) {
   return {
     dispatch,
+    toggleSidebar: () => dispatch(toggleSidebar()),
     runCommand: (type, payload) => {
       dispatch(runCommand(type, payload));
     },
@@ -225,6 +220,9 @@ function mapDispatchToProps(dispatch) {
     },
     createNewEntryInCollection: (collectionName) => {
       dispatch(createNewEntryInCollection(collectionName));
+    },
+    logoutUser: () => {
+      dispatch(logoutUser());
     },
   };
 }

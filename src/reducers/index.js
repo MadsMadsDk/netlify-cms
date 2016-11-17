@@ -7,7 +7,7 @@ import editorialWorkflow, * as fromEditorialWorkflow from './editorialWorkflow';
 import entryDraft from './entryDraft';
 import collections from './collections';
 import medias, * as fromMedias from './medias';
-import global from './global';
+import globalUI from './globalUI';
 
 const reducers = {
   auth,
@@ -19,7 +19,7 @@ const reducers = {
   editorialWorkflow,
   entryDraft,
   medias,
-  global,
+  globalUI,
 };
 
 export default reducers;
@@ -46,4 +46,4 @@ export const selectIntegration = (state, collection, hook) =>
   fromIntegrations.selectIntegration(state.integrations, collection, hook);
 
 export const getMedia = (state, path) =>
-  fromMedias.getMedia(state.medias, path);
+  fromMedias.getMedia(state.config.get('public_folder'), state.medias, path);
