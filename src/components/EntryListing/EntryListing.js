@@ -3,6 +3,7 @@ import ImmutablePropTypes from 'react-immutable-proptypes';
 import Waypoint from 'react-waypoint';
 import { Map } from 'immutable';
 import history from '../../routing/history';
+import { resolvePath } from '../../lib/pathHelper';
 import { selectFields, selectInferedField } from '../../reducers/collections';
 import { Card } from '../UI';
 import styles from './EntryListing.css';
@@ -39,9 +40,8 @@ export default class EntryListing extends React.Component {
     const label = entry.get('label');
     const title = label || entry.getIn(['data', inferedFields.titleField]);
     let image = entry.getIn(['data', inferedFields.imageField]);
-    if (image && image.indexOf('/') === -1) {
-      image = `/${ publicFolder }/${ image }`;
-    }
+    image = resolvePath(image, publicFolder);
+
     return (
       <Card
         key={entry.get('slug')}
@@ -55,8 +55,9 @@ export default class EntryListing extends React.Component {
         {inferedFields.descriptionField ?
           <p>{entry.getIn(['data', inferedFields.descriptionField])}</p>
           : inferedFields.remainingFields && inferedFields.remainingFields.map(f => (
-            <p key={f.get('name')}>
-              <strong>{f.get('label')}:</strong> {entry.getIn(['data', f.get('name')])}
+            <p key={f.get('name')} className={styles.cardList}>
+              <span className={styles.cardListLabel}>{f.get('label')}:</span>{' '}
+              { entry.getIn(['data', f.get('name')], '').toString() }
             </p>
           ))
         }
